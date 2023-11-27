@@ -6,6 +6,7 @@ const app = express();
 // const corsOptions = {
 //     origin: 'http://localhost:3000'
 // }
+require("dotenv").config({ path: "./.env" });
 
 
 // middleware
