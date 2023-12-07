@@ -61,7 +61,7 @@ exports.updateAreaById = async (req, res) => {
 exports.deleteAreaById = async (req, res) => {
     try {
         const area = await Area.destroy({where: {area_id: req.params.id}});
-        res.status(200).send({message: "Area deleted successfully", area});
+        res.status(200).json({message: "Area deleted successfully"});
     } catch (error) {
         res.status(400).json({error: error.message}); 
     }

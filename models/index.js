@@ -47,7 +47,7 @@ db.users.belongsTo(db.areas, { foreignKey: 'area_id' });
 db.areas.hasMany(db.reports, { foreignKey: 'area_id' });
 db.reports.belongsTo(db.areas, { foreignKey: 'area_id' });
 
-db.sequelize.sync({alter: true}).then(() => {})
+db.sequelize.sync({force: false}).then(() => {})
 .then(() => {
     console.log("Yes re-sync done.");
 });
