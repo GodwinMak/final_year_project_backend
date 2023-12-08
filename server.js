@@ -42,7 +42,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://animalwatchsystem.netlify.app/",
+    origin: "https://animalwatchsystem.netlify.app",
     methods: ["GET", "POST"],
   },
 });
