@@ -3,30 +3,49 @@ const { Op } = require("sequelize");
 const { Sequelize } = require("sequelize");
 
 // creat main model
-const Animal_point = db.animals;
+const Animal = db.animals;
+const Animal_Location = db.animalLocations
 
 const Area = db.areas;
 
+// create a controller that will be used to create location point from the gps device
+exports.createPoint = async (req, res) =>{
+  try {
+    const {animal_TagId, animal_location} = req.body
+    const animal = await Animal.findOne({
+      where: { animal_TagId: animal_TagId },
+    });
+     if (!animal) {
+       return res.status(404).json({ message: "Animal not found with the provided animal_TagId" });
+     }
+
+     const animal_point = await Animal_Location.create({
+      animal_TagId: animal_TagId, 
+      animal_location: animal_location
+     })
+
+     res.status(200).json(animal_point);
+  } catch (error) {
+    res.status(400).json({error: error.message})
+  }
+}
 // main work
 // 1. create and save new animal
 
-exports.createAnimal_point = async (req, res) => {
+exports.createAnimal = async (req, res) => {
   try {
-    const { animal_name, animal_location, animal_TagId, area_id } = req.body;
+    const { animal_name, animal_sex, animal_TagId, area_id } = req.body;
 
     // Check if the provided area_id exists in the areas table
     const area = await Area.findByPk(area_id);
-    console.log(area);
     if (!area) {
-      return res
-        .status(404)
-        .json({ message: "Area not found with the provided area_id" });
+      return res.status(404).json({ message: "Area not found with the provided area_id" });
     }
 
-    const animal = await Animal_point.create({
+    const animal = await Animal.create({
       animal_name: animal_name,
-      animal_location: animal_location,
       animal_TagId: animal_TagId,
+      animal_sex: animal_sex,
       area_id: area_id,
     });
     res.status(200).send(animal);
@@ -38,57 +57,67 @@ exports.createAnimal_point = async (req, res) => {
 // 2. Controller to get last three months data
 exports.getLastThreeMonthsData = async (req, res) => {
   try {
-        const latestAnimal = await Animal_point.findOne({
-          order: [["createdAt", "DESC"]],
-        });
+    const latestAnimal = await Animal_Location.findOne({
+      order: [["createdAt", "DESC"]],
+    });
 
-        if (!latestAnimal) {
-          // If there is no data in the database, return an empty array
-          return res.json([]);
-        }
+    if (!latestAnimal) {
+      // If there is no data in the database, return an empty array
+      return res.json([]);
+    }
+    const currentDate = new Date(latestAnimal.createdAt);
+    const threeMonthsAgo = new Date(currentDate);
+    threeMonthsAgo.setMonth(currentDate.getMonth() - 3);
 
-        const currentDate = new Date(latestAnimal.createdAt);
-        const threeMonthsAgo = new Date(currentDate);
-        threeMonthsAgo.setMonth(currentDate.getMonth() - 3);
+    const animalsData = await Animal_Location.findAll({
+      attributes: { exclude: ["animalLocation_id"] },
+      // where: {
+      //   createdAt: {
+      //     [Op.gte]: threeMonthsAgo,
+      //   },
+      // },
+      order: [["animal_TagId"], ["createdAt"]],
+      include: [
+        {
+          model: Animal,
+          attributes: ["animal_name", "animal_sex"],
+        },
+      ],
+    });
+    res.json(animalsData);
+    // // Check if there are no locations available for animals
+    // if (animalsData.every((animal) => !animal.animal_location)) {
+    //   return res
+    //     .status(404)
+    //     .json({ message: "No location available for animals." });
+    // }
+    // // Group the data by animal_TagId
+    // const groupedData = animalsData.reduce((acc, animal) => {
+    //   const animalTagId = animal.animal_TagId;
 
-        const animalsData = await Animal_point.findAll({
-          where: {
-            createdAt: {
-              [Op.gte]: threeMonthsAgo,
-            },
-          },
-          order: [["animal_TagId"], ["createdAt"]],
-        });
-        // Group the data by animal_TagId
-        const groupedData = animalsData.reduce((acc, animal) => {
-          const animalTagId = animal.animal_TagId;
+    //   if (!acc[animalTagId]) {
+    //     acc[animalTagId] = {
+    //       animal_name: animal.animal_name,
+    //       path: [],
+    //     };
+    //   }
 
-          if (!acc[animalTagId]) {
-            acc[animalTagId] = {
-              animal_name: animal.animal_name,
-              path: [],
-            };
-          }
+    //   acc[animalTagId].path.push([
+    //     animal.animal_location.coordinates[0],
+    //     animal.animal_location.coordinates[1],
+    //   ]);
 
-          acc[animalTagId].path.push([
-            animal.animal_location.coordinates[0],
-            animal.animal_location.coordinates[1],
-          ]);
+    //   return acc;
+    // }, {});
 
-          return acc;
-        }, {});
+    // // Convert the grouped data into the desired output format
+    // const result = Object.entries(groupedData).map(([animalTagId, data]) => ({
+    //   animal_name: data.animal_name,
+    //   animal_TagId: parseInt(animalTagId, 10),
+    //   path: data.path,
+    // }));
 
-
-        // Convert the grouped data into the desired output format
-        const result = Object.entries(groupedData).map(
-          ([animalTagId, data]) => ({
-            animal_name: data.animal_name,
-            animal_TagId: parseInt(animalTagId, 10),
-            path:data.path
-          })
-        );
-
-        res.status(200).json({ result, animalsData });
+    // res.status(200).json({ result, animalsData });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -138,7 +167,7 @@ const generateRGBFunction = (animalId) => {
 
 exports.getAnimalColor = async (req, res) => {
   try {
-    const result = await Animal_point.findAll({
+    const result = await Animal.findAll({
       attributes: [
         [Sequelize.fn("DISTINCT", Sequelize.col("animal_name")), "name"],
         ["animal_TagId", "id"],
@@ -161,7 +190,7 @@ exports.getAnimalColor = async (req, res) => {
 
 exports.deleteAnimalById = async (req, res) => {
   try {
-    await Animal_point.destroy({ where: { animal_id: req.params.id } });
+    await Animal.destroy({ where: { animal_id: req.params.id } });
     res.status(200).json({ message: "Animal deteled successfully" });
   } catch (error) {
     res.status(400).json({ error: error });

@@ -3,15 +3,17 @@
 const express = require("express");
 const router = express.Router();
 const {
-  createAnimal_point,
+  createAnimal,
   getLastThreeMonthsData,
   deleteAnimalById,
   getAnimalColor,
+  createPoint,
 } = require("../controllers/animalController");
 
 
 // Add your routes
-router.post('/createAnimal_point', createAnimal_point);
+router.post('/createPoint', createPoint); 
+router.post('/createAnimal', createAnimal);
 router.get('/getLastThreeMonthsData', getLastThreeMonthsData);
 router.get('/getAnimalSummary', getAnimalColor);
 router.delete('/deleteAnimal/:id', deleteAnimalById)

@@ -36,6 +36,7 @@ db.animals = require("./animal.model.js")(sequelize, DataTypes);
 db.users = require("./user.model.js")(sequelize, DataTypes);
 db.areas = require("./area.model.js")(sequelize, DataTypes);
 db.reports = require("./report.model.js")(sequelize, DataTypes, db);
+db.animalLocations = require("./animalLocation.model.js")(sequelize, DataTypes);
 
 // Define associations after defining all models
 db.areas.hasMany(db.animals, { foreignKey: 'area_id' });
@@ -46,6 +47,9 @@ db.users.belongsTo(db.areas, { foreignKey: 'area_id' });
 
 db.areas.hasMany(db.reports, { foreignKey: 'area_id' });
 db.reports.belongsTo(db.areas, { foreignKey: 'area_id' });
+
+db.animals.hasMany(db.animalLocations, { foreignKey: "animal_TagId" });
+db.animalLocations.belongsTo(db.animals, { foreignKey: "animal_TagId" });
 
 db.sequelize.sync({force: false}).then(() => {})
 .then(() => {

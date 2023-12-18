@@ -67,6 +67,6 @@ const onData = ({ event, instance }) => {
 
 stream.on("data", onData);
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });

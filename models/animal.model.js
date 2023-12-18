@@ -15,10 +15,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      animal_location: {
-        type: DataTypes.GEOMETRY("POINT"),
+      animal_sex: {
+        type: DataTypes.ENUM(['female', 'male']),
         allowNull: false,
-      },
+      }, 
       area_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
