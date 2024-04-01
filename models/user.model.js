@@ -26,6 +26,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
     },
+    phone: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      unique: true,
+    },
     role: {
       type: DataTypes.ENUM("user", "admin", "root"),
       defaultValue: "user",

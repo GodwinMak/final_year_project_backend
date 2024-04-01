@@ -70,12 +70,12 @@ exports.getLastThreeMonthsData = async (req, res) => {
     threeMonthsAgo.setMonth(currentDate.getMonth() - 3);
 
     const animalsData = await Animal_Location.findAll({
-      attributes: { exclude: ["animalLocation_id"] },
-      // where: {
-      //   createdAt: {
-      //     [Op.gte]: threeMonthsAgo,
-      //   },
-      // },
+      attributes: { exclude: ["animalLocation_id", "createdAt", "updatedAt"] },
+      where: {
+        createdAt: {
+          [Op.gte]: threeMonthsAgo,
+        },
+      },
       order: [["animal_TagId"], ["createdAt"]],
       include: [
         {
@@ -84,40 +84,39 @@ exports.getLastThreeMonthsData = async (req, res) => {
         },
       ],
     });
-    res.json(animalsData);
-    // // Check if there are no locations available for animals
-    // if (animalsData.every((animal) => !animal.animal_location)) {
-    //   return res
-    //     .status(404)
-    //     .json({ message: "No location available for animals." });
-    // }
-    // // Group the data by animal_TagId
-    // const groupedData = animalsData.reduce((acc, animal) => {
-    //   const animalTagId = animal.animal_TagId;
+    // Check if there are no locations available for animals
+    if (animalsData.every((animal) => !animal.animal_location)) {
+      return res
+        .status(404)
+        .json({ message: "No location available for animals." });
+    }
+    // Group the data by animal_TagId
+    const groupedData = animalsData.reduce((acc, animal) => {
+      const animalTagId = animal.animal_TagId;
 
-    //   if (!acc[animalTagId]) {
-    //     acc[animalTagId] = {
-    //       animal_name: animal.animal_name,
-    //       path: [],
-    //     };
-    //   }
+      if (!acc[animalTagId]) {
+        acc[animalTagId] = {
+          animal_name: animal.animal_name,
+          path: [],
+        };
+      }
 
-    //   acc[animalTagId].path.push([
-    //     animal.animal_location.coordinates[0],
-    //     animal.animal_location.coordinates[1],
-    //   ]);
+      acc[animalTagId].path.push([
+        animal.animal_location.coordinates[0],
+        animal.animal_location.coordinates[1],
+      ]);
 
-    //   return acc;
-    // }, {});
+      return acc;
+    }, {});
 
-    // // Convert the grouped data into the desired output format
-    // const result = Object.entries(groupedData).map(([animalTagId, data]) => ({
-    //   animal_name: data.animal_name,
-    //   animal_TagId: parseInt(animalTagId, 10),
-    //   path: data.path,
-    // }));
+    // Convert the grouped data into the desired output format
+    const result = Object.entries(groupedData).map(([animalTagId, data]) => ({
+      animal_name: data.animal_name,
+      animal_TagId: parseInt(animalTagId, 10),
+      path: data.path,
+    }));
 
-    // res.status(200).json({ result, animalsData });
+    res.status(200).json({ result, animalsData });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });

@@ -1,24 +1,19 @@
 module.exports = (sequelize, DataTypes) => {
     const Animal = sequelize.define("animal", {
-      animal_id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-        allowNull: false,
-      },
       animal_TagId: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,
+        unique: true,
       },
       animal_name: {
         type: DataTypes.STRING,
         allowNull: false,
       },
       animal_sex: {
-        type: DataTypes.ENUM(['female', 'male']),
+        type: DataTypes.ENUM(["female", "male"]),
         allowNull: false,
-      }, 
+      },
       area_id: {
         type: DataTypes.INTEGER,
         allowNull: false,

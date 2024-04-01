@@ -1,25 +1,26 @@
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
 const sequelizeStream = require("sequelize-stream");
+const http = require("http");
+const { Server } = require("socket.io");
 
 const db = require("./models");
 const Animal_point = db.animals;
 
-
 const app = express();
-
-
 require("dotenv").config({ path: "./.env" });
 
-
-
-
 // middleware
-app.use(cors());
-
+var corsOptions = {
+  origin: "http://localhost:3000"
+}
+app.use(cors(corsOptions));
 app.use(express.json());
-
 app.use(express.urlencoded({ extended: true }));
+
+app.get('/', (req,res)=>{
+  res.send('<h1>hello world</h1>')
+})
 
 // routers
 const userRouter = require('./routers/userRouter');
@@ -34,27 +35,21 @@ app.use("/api/animals", animalRoute);
 
 const PORT = process.env.PORT || 8080;
 
-// socket .io server
-const http = require("http");
-const {Server} = require("socket.io");
-
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://animalwatchsystem.netlify.app",
-    methods: ["GET", "POST"],
+    origin: "http://localhost:3000", //https://animalwatchsystem.netlify.app
   },
 });
 
-io.of("/").on("connection", (socket) => {
+io.of('/').on('connection', (socket) =>{
   console.log("socket.io: User connected: ", socket.id);
 
   socket.on("disconnect", () => {
     console.log("socket.io: User disconnected: ", socket.id);
   });
-});
-
+})
 
 const stream = sequelizeStream(Animal_point.sequelize);
 
@@ -67,6 +62,7 @@ const onData = ({ event, instance }) => {
 
 stream.on("data", onData);
 
-app.listen(PORT, () => {
+
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
-});
+})

@@ -8,14 +8,17 @@ module.exports = (sequelize, DataTypes) =>{
       },
       animal_TagId: {
         type: DataTypes.INTEGER,
-        primaryKey: true,
         allowNull: false,
+        references: {
+          model: "animals",
+          key: "animal_TagId",
+        },
+        onDelete: "CASCADE",
       },
       animal_location: {
         type: DataTypes.GEOMETRY("POINT"),
         allowNull: false,
       },
-
     });
     return AnimalLocation;
 }
