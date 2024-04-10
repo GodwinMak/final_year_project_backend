@@ -22,11 +22,7 @@ module.exports = (sequelize, DataTypes) =>{
         type: DataTypes.JSON, // Assuming device status can be represented as JSON
         allowNull: false,
       }
-    },
-      {
-        updatedAt: false,
-        createdAt: true,
-      }
+    }
   );
     return AnimalLocation;
 }

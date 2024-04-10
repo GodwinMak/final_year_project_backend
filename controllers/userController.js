@@ -14,7 +14,6 @@ exports.createUser = async (req, res) => {
   try {
     const { first_name, last_name, username, password, email, area_id, role } =
       req.body;
-
     const emailCheck = await User.findOne({ where: { email: email } });
 
     if (emailCheck) {

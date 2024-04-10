@@ -22,11 +22,7 @@ module.exports = (sequelize, DataTypes, db) => {
             type: DataTypes.STRING,
             allowNull: false
         }
-    },
-        {
-            updatedAt: false,
-            createdAt: true,
-        }
+    }
 );
     
     return Report;

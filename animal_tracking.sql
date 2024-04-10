@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 10, 2024 at 08:58 PM
+-- Generation Time: Apr 10, 2024 at 11:38 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -32,7 +32,8 @@ CREATE TABLE `animallocations` (
   `animal_TagId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `animal_location` point NOT NULL,
   `device_status` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`device_status`)),
-  `createdAt` datetime NOT NULL
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -47,7 +48,9 @@ CREATE TABLE `animals` (
   `animal_sex` enum('female','male') NOT NULL,
   `animal_birthDay` datetime NOT NULL,
   `animal_description` text NOT NULL,
-  `area_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL
+  `area_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -61,7 +64,9 @@ CREATE TABLE `areas` (
   `area_name` varchar(255) NOT NULL,
   `area_location` point NOT NULL,
   `area_polygon` polygon DEFAULT NULL,
-  `area_area` float NOT NULL
+  `area_area` float NOT NULL,
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -77,6 +82,7 @@ CREATE TABLE `reports` (
   `latitude` float NOT NULL,
   `report_description` varchar(255) NOT NULL,
   `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL,
   `area_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -95,7 +101,9 @@ CREATE TABLE `users` (
   `email` varchar(255) NOT NULL,
   `phone` int(11) DEFAULT NULL,
   `role` enum('user','admin') DEFAULT NULL,
-  `area_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL
+  `area_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

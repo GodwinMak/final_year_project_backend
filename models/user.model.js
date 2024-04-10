@@ -43,10 +43,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       onDelete: "CASCADE", // Adjust the deletion behavior as needed
     },
-  },
-    {
-      timestamps: false // Disable createdAt and updatedAt fields
-    }
+  }
   );
   return User;
 };
