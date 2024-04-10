@@ -31,7 +31,6 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 
-
 db.animals = require("./animal.model.js")(sequelize, DataTypes);
 db.users = require("./user.model.js")(sequelize, DataTypes);
 db.areas = require("./area.model.js")(sequelize, DataTypes);

@@ -34,7 +34,7 @@ exports.createPoint = async (req, res) =>{
 
 exports.createAnimal = async (req, res) => {
   try {
-    const { animal_name, animal_sex, animal_TagId, area_id } = req.body;
+    const { animal_name, animal_sex, animal_TagId, area_id, animal_birth_date, animal_description } = req.body;
 
     // Check if the provided area_id exists in the areas table
     const area = await Area.findByPk(area_id);
@@ -47,6 +47,8 @@ exports.createAnimal = async (req, res) => {
       animal_TagId: animal_TagId,
       animal_sex: animal_sex,
       area_id: area_id,
+      animal_birthDay: animal_birth_date,
+      animal_description: animal_description
     });
     res.status(200).send(animal);
   } catch (error) {
@@ -55,25 +57,22 @@ exports.createAnimal = async (req, res) => {
 };
 
 // 2. Controller to get last three months data
-exports.getLastThreeMonthsData = async (req, res) => {
+exports.getDataByNumberOfDays = async (req, res) => {
   try {
-    const latestAnimal = await Animal_Location.findOne({
-      order: [["createdAt", "DESC"]],
-    });
+    const { numberOfDays } = req.query;
 
-    if (!latestAnimal) {
-      // If there is no data in the database, return an empty array
-      return res.json([]);
-    }
-    const currentDate = new Date(latestAnimal.createdAt);
-    const threeMonthsAgo = new Date(currentDate);
-    threeMonthsAgo.setMonth(currentDate.getMonth() - 3);
+    // Calculate the start date based on the number of days selected by the user
+    // Calculate the start date based on the number of days selected by the user
+    const endDate = new Date();
+    const startDate = new Date(endDate);
+    startDate.setDate(startDate.getDate() - numberOfDays);
 
+    // Fetch data within the specified range
     const animalsData = await Animal_Location.findAll({
-      attributes: { exclude: ["animalLocation_id", "createdAt", "updatedAt"] },
+      attributes: { exclude: ["animalLocation_id"] },
       where: {
         createdAt: {
-          [Op.gte]: threeMonthsAgo,
+          [Op.between]: [startDate, endDate],
         },
       },
       order: [["animal_TagId"], ["createdAt"]],
@@ -84,12 +83,12 @@ exports.getLastThreeMonthsData = async (req, res) => {
         },
       ],
     });
+
     // Check if there are no locations available for animals
     if (animalsData.every((animal) => !animal.animal_location)) {
-      return res
-        .status(404)
-        .json({ message: "No location available for animals." });
+      return res.status(404).json({ message: "No location available for animals." });
     }
+
     // Group the data by animal_TagId
     const groupedData = animalsData.reduce((acc, animal) => {
       const animalTagId = animal.animal_TagId;
@@ -126,7 +125,7 @@ exports.getLastThreeMonthsData = async (req, res) => {
 
 // Helper function to generate RGB values based on animal_id
 const generateRGBFunction = (animalId) => {
-  const numericAnimalId = parseInt(animalId.id, 10);
+  const numericAnimalId = parseInt(animalId.id.replace(/-/g, ''), 16);
   const numDistinctColors = 360;
   const hue = (numericAnimalId % numDistinctColors) / numDistinctColors;
   const saturation = 0.7;

@@ -1,9 +1,9 @@
 module.exports = (sequelize, DataTypes) => {
     const Area = sequelize.define("area", {
         area_id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             primaryKey: true,
-            autoIncrement: true
+            defaultValue: DataTypes.UUIDV4
         },
         area_name: {
             type: DataTypes.STRING,
@@ -21,7 +21,11 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.FLOAT,
             allowNull: false
         }
-    });
+    },
+    {
+        timestamps: false // Disable createdAt and updatedAt fields
+    }
+);
 
     return Area;
 }

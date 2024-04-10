@@ -1,9 +1,9 @@
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define("user", {
     user_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       primaryKey: true,
-      autoIncrement: true,
+      defaultValue: DataTypes.UUIDV4
     },
     first_name: {
       type: DataTypes.STRING,
@@ -32,10 +32,21 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
     },
     role: {
-      type: DataTypes.ENUM("user", "admin", "root"),
-      defaultValue: "user",
+      type: DataTypes.ENUM("user", "admin"),
     },
-  });
-
+    area_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: "areas", // Assuming your area model is named 'area'; adjust this if needed
+        key: "area_id",
+      },
+      onDelete: "CASCADE", // Adjust the deletion behavior as needed
+    },
+  },
+    {
+      timestamps: false // Disable createdAt and updatedAt fields
+    }
+  );
   return User;
 };

@@ -1,10 +1,9 @@
 module.exports = (sequelize, DataTypes) => {
     const Animal = sequelize.define("animal", {
       animal_TagId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         primaryKey: true,
-        allowNull: false,
-        unique: true,
+        defaultValue: DataTypes.UUIDV4
       },
       animal_name: {
         type: DataTypes.STRING,
@@ -14,8 +13,16 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM(["female", "male"]),
         allowNull: false,
       },
+      animal_birthDay:{
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      animal_description:{
+        type: DataTypes.TEXT,
+        allowNull: false
+      }, 
       area_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         allowNull: false,
         references: {
           model: "areas", // Assuming your area model is named 'area'; adjust this if needed
@@ -23,7 +30,11 @@ module.exports = (sequelize, DataTypes) => {
         },
         onDelete: "CASCADE", // Adjust the deletion behavior as needed
       },
-    });
+    },
+      {
+        timestamps: false // Disable createdAt and updatedAt fields
+      }
+  );
 
     return Animal;
 }

@@ -4,7 +4,7 @@ const express = require("express");
 const router = express.Router();
 const {
   createAnimal,
-  getLastThreeMonthsData,
+  getDataByNumberOfDays,
   deleteAnimalById,
   getAnimalColor,
   createPoint,
@@ -14,7 +14,7 @@ const {
 // Add your routes
 router.post('/createPoint', createPoint); 
 router.post('/createAnimal', createAnimal);
-router.get('/getLastThreeMonthsData', getLastThreeMonthsData);
+router.get('/getLastThreeMonthsData', getDataByNumberOfDays);
 router.get('/getAnimalSummary', getAnimalColor);
 router.delete('/deleteAnimal/:id', deleteAnimalById)
 

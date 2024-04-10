@@ -1,13 +1,12 @@
 module.exports = (sequelize, DataTypes) =>{
     const AnimalLocation = sequelize.define("animalLocation", {
       animalLocation_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         primaryKey: true,
-        autoIncrement: true,
-        allowNull: false,
+        defaultValue: DataTypes.UUIDV4
       },
       animal_TagId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         allowNull: false,
         references: {
           model: "animals",
@@ -19,6 +18,15 @@ module.exports = (sequelize, DataTypes) =>{
         type: DataTypes.GEOMETRY("POINT"),
         allowNull: false,
       },
-    });
+      device_status:{
+        type: DataTypes.JSON, // Assuming device status can be represented as JSON
+        allowNull: false,
+      }
+    },
+      {
+        updatedAt: false,
+        createdAt: true,
+      }
+  );
     return AnimalLocation;
 }

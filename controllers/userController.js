@@ -12,7 +12,7 @@ const Area = db.areas;
 
 exports.createUser = async (req, res) => {
   try {
-    const { first_name, last_name, username, password, email, area_id } =
+    const { first_name, last_name, username, password, email, area_id, role } =
       req.body;
 
     const emailCheck = await User.findOne({ where: { email: email } });
@@ -24,26 +24,41 @@ exports.createUser = async (req, res) => {
     }
 
     // Check if the provided area_id exists in the areas table
-    const area = await Area.findByPk(area_id);
-    console.log(area)
-    if (!area) {
-      return res
-        .status(404)
-        .json({ message: "Area not found with the provided area_id" });
+    if(role === "user"){
+      const area = await Area.findByPk(area_id);
+      if (!area) {
+        return res
+          .status(404)
+          .json({ message: "Area not found with the provided area_id" });
+      }
+      const salt = await bcrypt.genSalt(Number(10));
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      const user = await User.create({
+        first_name: first_name,
+        last_name: last_name,
+        username: username,
+        password: hashedPassword,
+        email: email,
+        area_id: area_id,
+      });
+      return  res.status(200).send(user);
     }
+    
+    if(role === "admin"){
+      const salt = await bcrypt.genSalt(Number(10));
+      const hashedPassword = await bcrypt.hash(password, salt);
 
-    const salt = await bcrypt.genSalt(Number(10));
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const user = await User.create({
-      first_name: first_name,
-      last_name: last_name,
-      username: username,
-      password: hashedPassword,
-      email: email,
-      area_id: area_id,
-    });
-    res.status(200).send(user);
+      const user = await User.create({
+        first_name: first_name,
+        last_name: last_name,
+        username: username,
+        password: hashedPassword,
+        email: email,
+        role: role
+      });
+      return res.status(200).send(user);
+    }
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -54,60 +69,32 @@ exports.loginUser = async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
-    const userCheck = await User.findOne({
+    const user = await User.findOne({
       where: { username: username },
-      include: [
-        {
-          model: Area,
-          attributes: ["area_id"], // Specify the attributes you want to retrieve
-          as: "area", // Alias for the association
-        },
-      ],
     });
 
-    if (!userCheck) {
+    if (!user) {
       return res.status(401).json({ message: "Invalid User Name or password" });
-    }
+    };
 
     // Validate password
-    const isPasswordValid = await bcrypt.compare(password, userCheck.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid User Name or password" });
-    }
+    };
 
-    // Check login conditions based on user role
-    switch (userCheck.role) {
-      case "root":
-        // If the user has the role of 'root', allow login without area_id
-        break;
-      case "admin":
-        // If the user has the role of 'admin', require a valid area_id
-        if (!userCheck.area || !userCheck.area.area_id) {
-          return res
-            .status(401)
-            .json({ message: "Admin user requires a valid area" });
-        }
-        break;
-      case "user":
-        // If the user has the role of 'user', require a valid area_id
-        if (!userCheck.area || !userCheck.area.area_id) {
-          return res
-            .status(401)
-            .json({ message: "User requires a valid area" });
-        }
-        break;
-      default:
-        // Handle other roles if needed
-        break;
+    if(user.role === "user"){
+      return res.status(200).json({
+        status: true,
+        user
+      });
     }
-
-    res.status(200).json({
+    if(user.role === "admin") {
+      return res.status(200).json({
       status: true,
-      username: userCheck.username,
-      email: userCheck.email,
-      role: userCheck.role,
-      area: userCheck.area, // Include the associated area in the response
+      user
     });
+    }
   } catch (error) {
     res.status(403).json({ status: false, error: error });
   }
@@ -132,6 +119,7 @@ exports.findAllUsers = async (req, res) => {
     // Fetch the paginated users
     const { count, rows: users } = await User.findAndCountAll({
       attributes: { exclude: ["password"] },
+      where: { role: "user" },
       limit: pageSize,
       offset,
       include: [

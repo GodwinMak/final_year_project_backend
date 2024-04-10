@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req,res)=>{
-  res.send('<h1>hello world</h1>')
+  res.send('<h1>hello world</h1>');
 })
 
 // routers
@@ -27,6 +27,7 @@ const userRouter = require('./routers/userRouter');
 const reportRouter = require('./routers/reportRouter');
 const areaRouter = require('./routers/areaRouter');
 const animalRoute = require('./routers/animalRouter')
+
 app.use('/api/users', userRouter);
 app.use('/api/reports', reportRouter);
 app.use('/api/areas', areaRouter);

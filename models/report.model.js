@@ -1,9 +1,9 @@
 module.exports = (sequelize, DataTypes, db) => {
     const Report = sequelize.define("report", {
         report_id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             primaryKey: true,
-            autoIncrement: true
+            defaultValue: DataTypes.UUIDV4
         },
         report_name: {
             type: DataTypes.STRING,
@@ -22,7 +22,12 @@ module.exports = (sequelize, DataTypes, db) => {
             type: DataTypes.STRING,
             allowNull: false
         }
-    });
+    },
+        {
+            updatedAt: false,
+            createdAt: true,
+        }
+);
     
     return Report;
 }
