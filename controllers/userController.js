@@ -192,6 +192,7 @@ exports.deleteUserById = async (req, res) => {
 // 7. change password for a user
 exports.changePassword = async (req, res) => {
   try {
+    console.log(req.params.id, req.body);
     const userId = req.params.id;
     const { oldPassword, newPassword } = req.body;
 

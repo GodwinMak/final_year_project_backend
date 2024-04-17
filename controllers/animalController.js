@@ -194,3 +194,45 @@ exports.deleteAnimalById = async (req, res) => {
     res.status(400).json({ error: error });
   }
 };
+
+
+exports.getAnimalAvailable = async (req, res) => {
+  try {
+    const {page = 1} = req.query;
+    const maxPageSize = 10;
+
+    // Fetch the number of available animals
+    const totalCount = await Animal.count();
+
+    // Calculate the dynamic pageSize based on total users
+    const pageSize = Math.min(maxPageSize, totalCount);
+
+    // calculate the offset based on the requested page and dynamic pageSize
+    const offset = (page - 1) * pageSize;
+
+    const { count, rows: animals } = await Animal.findAndCountAll({
+      limit: pageSize,
+      offset,
+      include: [
+        {
+          model: Area,
+          attributes: ["area_name"],
+          required: true
+        }
+      ]
+    })
+    const totalPages = Math.ceil(count / pageSize);
+
+    res.status(200).json({
+      animals,
+      meta: {
+        totalUsers: count,
+        totalPages,
+        currentPage: parseInt(page),
+        pageSize: parseInt(pageSize),
+      },
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
