@@ -188,7 +188,7 @@ exports.getAnimalColor = async (req, res) => {
 
 exports.deleteAnimalById = async (req, res) => {
   try {
-    await Animal.destroy({ where: { animal_id: req.params.id } });
+    await Animal.destroy({ where: { animal_TagId: req.params.id } });
     res.status(200).json({ message: "Animal deteled successfully" });
   } catch (error) {
     res.status(400).json({ error: error });
