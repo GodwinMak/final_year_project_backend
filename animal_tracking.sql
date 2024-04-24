@@ -95,12 +95,12 @@ CREATE TABLE `reports` (
 CREATE TABLE `users` (
   `user_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `first_name` varchar(255) NOT NULL,
-  `last_name` varchar(255) DEFAULT NULL,
+  `last_name` varchar(255) DEFAULT NOT NULL,
   `username` varchar(255) NOT NULL,
-  `password` varchar(255) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NOT NULL,
   `email` varchar(255) NOT NULL,
   `phone` int(11) DEFAULT NULL,
-  `role` enum('user','admin') DEFAULT NULL,
+  `role` enum('user','admin') DEFAULT NOT NULL,
   `area_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `createdAt` datetime NOT NULL,
   `updatedAt` datetime NOT NULL

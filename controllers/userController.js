@@ -39,6 +39,7 @@ exports.createUser = async (req, res) => {
         username: username,
         password: hashedPassword,
         email: email,
+        role: role,
         area_id: area_id,
       });
       return  res.status(200).send(user);

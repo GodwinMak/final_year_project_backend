@@ -33,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     role: {
       type: DataTypes.ENUM("user", "admin"),
+      allowNull: false,
     },
     area_id: {
       type: DataTypes.UUID,
