@@ -12,7 +12,7 @@ require("dotenv").config({ path: "./.env" });
 
 // middleware
 var corsOptions = {
-  origin: "https://animalwatchdashboard.netlify.app/"
+  origin: "http://localhost:3000"
 }
 app.use(cors(corsOptions));
 app.use(express.json());
