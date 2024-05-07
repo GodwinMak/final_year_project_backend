@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 10, 2024 at 11:38 PM
+-- Generation Time: May 07, 2024 at 09:56 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -31,7 +31,8 @@ CREATE TABLE `animallocations` (
   `animalLocation_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `animal_TagId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `animal_location` point NOT NULL,
-  `device_status` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`device_status`)),
+  `device_status` int(11) NOT NULL,
+  `time` datetime NOT NULL,
   `createdAt` datetime NOT NULL,
   `updatedAt` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -95,12 +96,12 @@ CREATE TABLE `reports` (
 CREATE TABLE `users` (
   `user_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `first_name` varchar(255) NOT NULL,
-  `last_name` varchar(255) DEFAULT NOT NULL,
+  `last_name` varchar(255) DEFAULT NULL,
   `username` varchar(255) NOT NULL,
-  `password` varchar(255) DEFAULT NOT NULL,
+  `password` varchar(255) DEFAULT NULL,
   `email` varchar(255) NOT NULL,
   `phone` int(11) DEFAULT NULL,
-  `role` enum('user','admin') DEFAULT NOT NULL,
+  `role` enum('user','admin') NOT NULL,
   `area_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `createdAt` datetime NOT NULL,
   `updatedAt` datetime NOT NULL

@@ -7,6 +7,10 @@
 yarn-debug.log*
 yarn-error.log*
 
+/combined.json
+/animalData.js
+
+
 # environment
 /.env
 /.env.production

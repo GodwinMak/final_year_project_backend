@@ -11,7 +11,7 @@ const Area = db.areas;
 // create a controller that will be used to create location point from the gps device
 exports.createPoint = async (req, res) =>{
   try {
-    const {animal_TagId, animal_location} = req.body
+    const {animal_TagId, animal_location, device_status, time} = req.body
     const animal = await Animal.findOne({
       where: { animal_TagId: animal_TagId },
     });
@@ -21,7 +21,9 @@ exports.createPoint = async (req, res) =>{
 
      const animal_point = await Animal_Location.create({
       animal_TagId: animal_TagId, 
-      animal_location: animal_location
+      animal_location: animal_location,
+      device_status: device_status,
+      time: time
      })
 
      res.status(200).json(animal_point);

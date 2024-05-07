@@ -19,8 +19,12 @@ module.exports = (sequelize, DataTypes) =>{
         allowNull: false,
       },
       device_status:{
-        type: DataTypes.JSON, // Assuming device status can be represented as JSON
-        allowNull: false,
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      time: {
+        type: DataTypes.DATE,
+        allowNull:false
       }
     }
   );
