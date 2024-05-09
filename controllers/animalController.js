@@ -47,8 +47,7 @@ exports.bulkInsertAnimals = async (req, res) => {
 
         res.status(201).json({ success: true, data: insertedAnimals });
     } catch (error) {
-        console.error('Error inserting animals:', error);
-        res.status(500).json({ success: false, error: 'Internal server error' });
+        res.status(500).json({ success: false, error: error });
     }
 };
 // main work
