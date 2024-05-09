@@ -35,15 +35,16 @@ exports.createPoint = async (req, res) =>{
 // it will be deleted 
 exports.bulkInsertAnimals = async (req, res) => {
     try {
-        const animalsData = req.body.map(animal => ({
-            animal_TagId: animal.tagId,
-            animal_location: { type: 'Point', coordinates: [animal.longitude, animal.latitude] },
-            device_status: animal.batteryStatus,
-            time: new Date(animal.combinedDatetime)
-        }));
+        // const animalsData = req.body.map(animal => ({
+        //   animal_TagId: animal.animal_TagId,
+        //     animal_location: { type: 'Point', coordinates: [animal.longitude, animal.latitude] },
+        //     device_status: animal.batteryStatus,
+        //     time: new Date(animal.combinedDatetime)
+        // }));
+
 
         // Insert data into the database in bulk
-      const insertedAnimals = await Animal_Location.bulkCreate(animalsData);
+      const insertedAnimals = await Animal_Location.bulkCreate(req.body);
 
         res.status(201).json({ success: true, data: insertedAnimals });
     } catch (error) {
