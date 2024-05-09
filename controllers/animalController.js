@@ -43,7 +43,7 @@ exports.bulkInsertAnimals = async (req, res) => {
         }));
 
         // Insert data into the database in bulk
-      const insertedAnimals = await Animal_Location.insertMany(animalsData);
+      const insertedAnimals = await Animal_Location.bulkCreate(animalsData);
 
         res.status(201).json({ success: true, data: insertedAnimals });
     } catch (error) {
