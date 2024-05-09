@@ -8,12 +8,14 @@ const {
   deleteAnimalById,
   getAnimalColor,
   createPoint,
-  getAnimalAvailable
+  getAnimalAvailable,
+  bulkInsertAnimals
 } = require("../controllers/animalController");
 
 
 // Add your routes
 router.post('/createPoint', createPoint); 
+router.post("/bulkInsertAnimals", bulkInsertAnimals)
 router.post('/createAnimal', createAnimal);
 router.get('/', getAnimalAvailable);
 router.get('/getLastThreeMonthsData', getDataByNumberOfDays);

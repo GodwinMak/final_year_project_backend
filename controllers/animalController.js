@@ -31,6 +31,26 @@ exports.createPoint = async (req, res) =>{
     res.status(400).json({error: error.message})
   }
 }
+
+// it will be deleted 
+exports.bulkInsertAnimals = async (req, res) => {
+    try {
+        const animalsData = req.body.map(animal => ({
+            animal_TagId: animal.tagId,
+            animal_location: { type: 'Point', coordinates: [animal.longitude, animal.latitude] },
+            device_status: animal.batteryStatus,
+            time: new Date(animal.combinedDatetime)
+        }));
+
+        // Insert data into the database in bulk
+        const insertedAnimals = await Animal.insertMany(animalsData);
+
+        res.status(201).json({ success: true, data: insertedAnimals });
+    } catch (error) {
+        console.error('Error inserting animals:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+};
 // main work
 // 1. create and save new animal
 
@@ -238,3 +258,4 @@ exports.getAnimalAvailable = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 }
+
