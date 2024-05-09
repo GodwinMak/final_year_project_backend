@@ -27,7 +27,7 @@ SET time_zone = "+00:00";
 -- Table structure for table `animallocations`
 --
 
-CREATE TABLE `animallocations` (
+CREATE TABLE `animalLocations` (
   `animalLocation_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `animal_TagId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `animal_location` point NOT NULL,
