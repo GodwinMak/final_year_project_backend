@@ -4,12 +4,13 @@ const express = require("express");
 const router = express.Router();
 const {
   createAnimal,
-  getDataByNumberOfDays,
   deleteAnimalById,
   getAnimalColor,
   createPoint,
   getAnimalAvailable,
-  bulkInsertAnimals
+  bulkInsertAnimals,
+  getRealTimeAnimalData,
+  getData
 } = require("../controllers/animalController");
 
 
@@ -18,8 +19,9 @@ router.post('/createPoint', createPoint);
 router.post("/bulkInsertAnimals", bulkInsertAnimals)
 router.post('/createAnimal', createAnimal);
 router.get('/', getAnimalAvailable);
-router.get('/getLastThreeMonthsData', getDataByNumberOfDays);
-router.get('/getAnimalSummary', getAnimalColor);
+router.get('/realtime', getRealTimeAnimalData)
+router.get('/getData', getData);
+router.get('/getColour', getAnimalColor);
 router.delete('/deleteAnimal/:id', deleteAnimalById)
 
 

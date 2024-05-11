@@ -49,10 +49,16 @@ const PORT = process.env.PORT || 8080;
 
 const server = http.createServer(app);
 
-const io = new Server(server, {
+ const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", //https://animalwatchsystem.netlify.app
-  },
+    origin: (origin, callback) => {
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    }
+  }
 });
 
 io.of('/').on('connection', (socket) =>{

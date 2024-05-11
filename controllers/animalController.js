@@ -35,14 +35,6 @@ exports.createPoint = async (req, res) =>{
 // it will be deleted 
 exports.bulkInsertAnimals = async (req, res) => {
     try {
-        // const animalsData = req.body.map(animal => ({
-        //   animal_TagId: animal.animal_TagId,
-        //     animal_location: { type: 'Point', coordinates: [animal.longitude, animal.latitude] },
-        //     device_status: animal.batteryStatus,
-        //     time: new Date(animal.combinedDatetime)
-        // }));
-
-
         // Insert data into the database in bulk
       const insertedAnimals = await Animal_Location.bulkCreate(req.body);
 
@@ -51,8 +43,80 @@ exports.bulkInsertAnimals = async (req, res) => {
         res.status(500).json({error: error.message });
     }
 };
-// main work
-// 1. create and save new animal
+
+exports.getRealTimeAnimalData = async (req, res) => {
+  try {
+    const animalData = await Animal.findAll({
+      include: [{
+        model: Animal_Location,
+        required: true,
+        order: [['time', 'DESC']],
+        limit: 1,
+      }],
+    });
+
+    res.json(animalData);
+  } catch (error) {
+    console.error('Error fetching recent animal data:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getData = async (req, res) => {
+  try {
+    // Get the list of animal_TagId values from the request query
+    const animalTagIds = req.query.animalTagIds ? req.query.animalTagIds.split(',') : [];
+
+    // Check if the user provided the numberOfDays parameter
+    const numberOfDays = parseInt(req.query.numberOfDays);
+    let whereCondition = {};
+    if (!isNaN(numberOfDays)) {
+      // Calculate the date X days before the most recent data for each animal
+      whereCondition.time = {
+        [Op.gte]: new Date(new Date() - numberOfDays * 24 * 60 * 60 * 1000)
+      };
+    } else {
+      // Find the most recent data for each animal
+      const animalDataPromises = animalTagIds.map(async (animalTagId) => {
+        const mostRecentData = await Animal_Location.findOne({
+          where: { animal_TagId: animalTagId },
+          order: [['time', 'DESC']],
+        });
+        if (mostRecentData) {
+          whereCondition.time = {
+            [Op.gte]: new Date(mostRecentData.time - 24 * 60 * 60 * 1000)
+          };
+        }
+        return Animal_Location.findAll({
+          include: [{
+            model: Animal,
+            required: true,
+          }],
+          where: whereCondition,
+          order: [['time', 'DESC']],
+        });
+      });
+
+      const animalData = await Promise.all(animalDataPromises);
+      return res.json(animalData);
+    }
+
+    // If numberOfDays is provided, retrieve data for the specified number of days
+    const animalData = await Animal_Location.findAll({
+      include: [{
+        model: Animal,
+        required: true,
+      }],
+      where: whereCondition,
+      order: [['time', 'DESC']],
+    });
+
+    res.json(animalData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 exports.createAnimal = async (req, res) => {
   try {
@@ -78,76 +142,11 @@ exports.createAnimal = async (req, res) => {
   }
 };
 
-// 2. Controller to get last three months data
-exports.getDataByNumberOfDays = async (req, res) => {
-  try {
-    const { numberOfDays } = req.query;
-
-    // Calculate the start date based on the number of days selected by the user
-    // Calculate the start date based on the number of days selected by the user
-    const endDate = new Date();
-    const startDate = new Date(endDate);
-    startDate.setDate(startDate.getDate() - numberOfDays);
-
-    // Fetch data within the specified range
-    const animalsData = await Animal_Location.findAll({
-      attributes: { exclude: ["animalLocation_id"] },
-      where: {
-        createdAt: {
-          [Op.between]: [startDate, endDate],
-        },
-      },
-      order: [["animal_TagId"], ["createdAt"]],
-      include: [
-        {
-          model: Animal,
-          attributes: ["animal_name", "animal_sex"],
-        },
-      ],
-    });
-
-    // Check if there are no locations available for animals
-    if (animalsData.every((animal) => !animal.animal_location)) {
-      return res.status(404).json({ message: "No location available for animals." });
-    }
-
-    // Group the data by animal_TagId
-    const groupedData = animalsData.reduce((acc, animal) => {
-      const animalTagId = animal.animal_TagId;
-
-      if (!acc[animalTagId]) {
-        acc[animalTagId] = {
-          animal_name: animal.animal_name,
-          path: [],
-        };
-      }
-
-      acc[animalTagId].path.push([
-        animal.animal_location.coordinates[0],
-        animal.animal_location.coordinates[1],
-      ]);
-
-      return acc;
-    }, {});
-
-    // Convert the grouped data into the desired output format
-    const result = Object.entries(groupedData).map(([animalTagId, data]) => ({
-      animal_name: data.animal_name,
-      animal_TagId: parseInt(animalTagId, 10),
-      path: data.path,
-    }));
-
-    res.status(200).json({ result, animalsData });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
 
 // Helper function to generate RGB values based on animal_id
-const generateRGBFunction = (animalId) => {
-  const numericAnimalId = parseInt(animalId.id.replace(/-/g, ''), 16);
+const generateRGBFunction = (animal) => {
+  // Extract the numeric part from the animal name
+  const numericAnimalId = parseInt(animal.name.split('_')[1]);
   const numDistinctColors = 360;
   const hue = (numericAnimalId % numDistinctColors) / numDistinctColors;
   const saturation = 0.7;
@@ -179,8 +178,8 @@ const generateRGBFunction = (animalId) => {
       break;
   }
   return {
-    name: animalId.name,
-    id: animalId.id,
+    name: animal.name,
+    id: animal.id,
     color: [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)],
   };
 };
@@ -206,7 +205,6 @@ exports.getAnimalColor = async (req, res) => {
   }
 };
 
-//3 delete animal data by id
 
 exports.deleteAnimalById = async (req, res) => {
   try {
