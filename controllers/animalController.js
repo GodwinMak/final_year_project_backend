@@ -62,6 +62,7 @@ exports.getRealTimeAnimalData = async (req, res) => {
   }
 };
 
+
 exports.getData = async (req, res) => {
   try {
     // Get the list of animal_TagId values from the request query
@@ -70,24 +71,61 @@ exports.getData = async (req, res) => {
     // Check if the user provided the numberOfDays parameter
     const numberOfDays = parseInt(req.query.numberOfDays);
     let whereCondition = {};
+
     if (!isNaN(numberOfDays)) {
-      // Calculate the date X days before the most recent data for each animal
-      whereCondition.time = {
-        [Op.gte]: new Date(new Date() - numberOfDays * 24 * 60 * 60 * 1000)
-      };
-    } else {
-      // Find the most recent data for each animal
+      const mostRecentDataPromises = animalTagIds.map(async (animalTagId) => {
+        return await Animal_Location.findOne({
+          where: { animal_TagId: animalTagId },
+          order: [['time', 'DESC']],
+        });
+      });
+
+      // Wait for all promises to resolve
+      const mostRecentDataResults = await Promise.all(mostRecentDataPromises);
+
+      // Calculate the start date based on the most recent data for each animal
+      const startDateByAnimal = mostRecentDataResults.map((mostRecentData) => {
+        return new Date(new Date(mostRecentData.time) - numberOfDays * 24 * 60 * 60 * 1000);
+      });
+
+      // For each animal, fetch location data for the specified number of days from the most recent data
+      const animalDataPromises = animalTagIds.map(async (animalTagId, index) => {
+        return await Animal_Location.findAll({
+          include: [{
+            model: Animal,
+            required: true,
+          }],
+          where: {
+            animal_TagId: animalTagId,
+            time: {
+              [Op.gte]: startDateByAnimal[index]
+            }
+          },
+          order: [['time', 'DESC']],
+        });
+      });
+
+      // Execute all promises concurrently
+      const animalData = await Promise.all(animalDataPromises);
+      return res.json(animalData);
+    }else{
+      // If numberOfDays is not provided or invalid, return recent data for each animal
       const animalDataPromises = animalTagIds.map(async (animalTagId) => {
+        // Find the most recent data for each animal
         const mostRecentData = await Animal_Location.findOne({
           where: { animal_TagId: animalTagId },
           order: [['time', 'DESC']],
         });
+
+        // If mostRecentData exists, filter data for the past 24 hours
         if (mostRecentData) {
           whereCondition.time = {
             [Op.gte]: new Date(mostRecentData.time - 24 * 60 * 60 * 1000)
           };
         }
-        return Animal_Location.findAll({
+
+        // Fetch animal location data for each animal
+        return await Animal_Location.findAll({
           include: [{
             model: Animal,
             required: true,
@@ -97,25 +135,16 @@ exports.getData = async (req, res) => {
         });
       });
 
+      // Execute all promises concurrently
       const animalData = await Promise.all(animalDataPromises);
-      return res.json(animalData);
+      res.json(animalData);
     }
 
-    // If numberOfDays is provided, retrieve data for the specified number of days
-    const animalData = await Animal_Location.findAll({
-      include: [{
-        model: Animal,
-        required: true,
-      }],
-      where: whereCondition,
-      order: [['time', 'DESC']],
-    });
-
-    res.json(animalData);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 exports.createAnimal = async (req, res) => {
