@@ -46,10 +46,23 @@ exports.bulkInsertAnimals = async (req, res) => {
 
 exports.getRealTimeAnimalData = async (req, res) => {
   try {
+    // Extract animalTagIds from the query parameters
+    const { animalTagIds } = req.query;
+
+    // If animalTagIds is not provided or empty, return a bad request response
+    if (!animalTagIds || animalTagIds.length === 0) {
+      return res.status(400).json({ error: 'Animal IDs are required' });
+    }
+
+    // Convert animalTagIds to an array if it's a string
+    const animalTagIdsArray = Array.isArray(animalTagIds) ? animalTagIds : [animalTagIds];
+
+    // Fetch real-time data for the specified animal IDs
     const animalData = await Animal.findAll({
       include: [{
         model: Animal_Location,
         required: true,
+        where: { animal_TagId: animalTagIdsArray }, // Filter by animal_TagId
         order: [['time', 'DESC']],
         limit: 1,
       }],
@@ -57,10 +70,11 @@ exports.getRealTimeAnimalData = async (req, res) => {
 
     res.json(animalData);
   } catch (error) {
-    console.error('Error fetching recent animal data:', error);
+    console.error('Error fetching real-time animal data:', error);
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 exports.getData = async (req, res) => {
