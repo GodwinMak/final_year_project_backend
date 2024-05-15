@@ -46,29 +46,25 @@ exports.bulkInsertAnimals = async (req, res) => {
 
 exports.getRealTimeAnimalData = async (req, res) => {
   try {
-    // Extract animalTagIds from the query parameters
-    const { animalTagIds } = req.query;
+    const animalTagIds = req.query.animalTagIds ? req.query.animalTagIds.split(',') : [];
 
-    // If animalTagIds is not provided or empty, return a bad request response
-    if (!animalTagIds || animalTagIds.length === 0) {
-      return res.status(400).json({ error: 'Animal IDs are required' });
-    }
-    const animalTagIdsArray = Array.isArray(animalTagIds) ? animalTagIds : [animalTagIds];
-    const animalDataPromises = animalTagIdsArray.map(async (animalTagId) => {
-      return await Animal.findOne({
-        where: { animal_TagId: animalTagId },
-        include: [{
-          model: Animal_Location,
-          required: true,
-          order: [['time', 'DESC']],
-          limit: 1,
-        }],
-      })
-    })
-    const animalData = await Promise.all(animalDataPromises);
+    const animalData = await Animal.findAll({
+      include: [{
+        model: Animal_Location,
+        required: true,
+        order: [['time', 'DESC']],
+        limit: 1,
+      }],
+      where: {
+        animal_TagId: {
+          [Op.in]: animalTagIds // Filter based on the animalTagIds array
+        }
+      }
+    });
+
     res.json(animalData);
   } catch (error) {
-    console.error('Error fetching real-time animal data:', error);
+    // console.error('Error fetching recent animal data:', error);
     res.status(500).json({ error: error.message });
   }
 };
