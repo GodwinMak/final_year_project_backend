@@ -54,20 +54,18 @@ exports.getRealTimeAnimalData = async (req, res) => {
       return res.status(400).json({ error: 'Animal IDs are required' });
     }
 
-    // Convert animalTagIds to an array if it's a string
-    const animalTagIdsArray = Array.isArray(animalTagIds) ? animalTagIds : [animalTagIds];
-
-    // Fetch real-time data for the specified animal IDs
-    const animalData = await Animal.findAll({
-      include: [{
-        model: Animal_Location,
-        required: true,
-        where: { animal_TagId: animalTagIdsArray }, // Filter by animal_TagId
-        order: [['time', 'DESC']],
-        limit: 1,
-      }],
-    });
-
+    const animalDataPromises = animalTagIds.map(async (animalTagId) => {
+      return await Animal.findOne({
+        where: { animal_TagId: animalTagId },
+        include: [{
+          model: Animal_Location,
+          required: true,
+          order: [['time', 'DESC']],
+          limit: 1,
+        }],
+      })
+    })
+    const animalData = await Promise.all(animalDataPromises);
     res.json(animalData);
   } catch (error) {
     console.error('Error fetching real-time animal data:', error);
