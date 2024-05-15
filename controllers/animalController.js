@@ -53,8 +53,8 @@ exports.getRealTimeAnimalData = async (req, res) => {
     if (!animalTagIds || animalTagIds.length === 0) {
       return res.status(400).json({ error: 'Animal IDs are required' });
     }
-
-    const animalDataPromises = animalTagIds.map(async (animalTagId) => {
+    const animalTagIdsArray = Array.isArray(animalTagIds) ? animalTagIds : [animalTagIds];
+    const animalDataPromises = animalTagIdsArray.map(async (animalTagId) => {
       return await Animal.findOne({
         where: { animal_TagId: animalTagId },
         include: [{
