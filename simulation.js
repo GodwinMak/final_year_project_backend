@@ -1,7 +1,7 @@
 var q = require("q");
 var turf = require("turf");
 var mapboxgl = require("mapbox-gl");
-var fetch = require("node-fetch")
+// var fetch = require("node-fetch")
 mapboxgl.accessToken =
   "pk.eyJ1IjoiZ29kd2luLW1ha3lhbyIsImEiOiJjbGcxdnBobTAxcHA0M25xeWRycWhldDRhIn0.K6dLSpAqVOmeX8X4205dVQ";
 
@@ -9,9 +9,7 @@ var animals = [];
 
 async function fetchAnimals() {
   try {
-    const response = await fetch(
-      "https://apiv2.at.patrickmamsery.co.tz/api/animals"
-    );
+    const response = await fetch("http://localhost:8080/api/animals");
     const data = await response.json();
     animals = data.animals;
     return animals;
@@ -83,7 +81,7 @@ async function postToDatabase(animal_TagId, position) {
 
   try {
     const response = await fetch(
-      "https://apiv2.at.patrickmamsery.co.tz/api/animals/createPoint",
+      "http://localhost:8080/api/animals/createPoint",
       {
         method: "POST",
         headers: {
