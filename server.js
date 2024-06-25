@@ -33,6 +33,39 @@ app.get('/', (req,res)=>{
   res.send('<h1>hello world</h1>');
 })
 
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: (origin, callback) => {
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+  },
+});
+
+io.of("/").on("connection", (socket) => {
+  console.log("socket.io: User connected: ", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("socket.io: User disconnected: ", socket.id);
+  });
+});
+
+const stream = sequelizeStream(Animal_point.sequelize);
+
+const onData = ({ event, instance }) => {
+  if (event === "create") {
+    // Send the new data to the frontend
+    io.of("/").emit("newAnimalData", instance);
+  }
+};
+
+stream.on("data", onData);
+
 // routers
 const userRouter = require('./routers/userRouter');
 const reportRouter = require('./routers/reportRouter');
@@ -47,38 +80,7 @@ app.use("/api/animals", animalRoute);
 
 const PORT = process.env.PORT || 8080;
 
-const server = http.createServer(app);
 
- const io = new Server(server, {
-  cors: {
-    origin: (origin, callback) => {
-      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    }
-  }
-});
-
-io.of('/').on('connection', (socket) =>{
-  console.log("socket.io: User connected: ", socket.id);
-
-  socket.on("disconnect", () => {
-    console.log("socket.io: User disconnected: ", socket.id);
-  });
-})
-
-const stream = sequelizeStream(Animal_point.sequelize);
-
-const onData = ({ event, instance }) => {
-  if (event === "create") {
-    // Send the new data to the frontend
-    io.of("api/socket").emit("newAnimalData", instance);
-  }
-};
-
-stream.on("data", onData);
 
 
 server.listen(PORT, () => {

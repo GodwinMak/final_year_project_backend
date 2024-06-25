@@ -9,6 +9,8 @@ yarn-error.log*
 
 /combined.json
 /animalData.js
+/dummyData.js
+/grumeti.geojson
 
 
 # environment
