@@ -3,6 +3,7 @@ const cors = require("cors");
 const sequelizeStream = require("sequelize-stream");
 const http = require("http");
 const { Server } = require("socket.io");
+const simulation = require("./simulation"); // Require the simulation module
 
 const db = require("./models");
 const Animal_point = db.animals;
@@ -88,4 +89,5 @@ const PORT = process.env.PORT || 8080;
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
+  simulation.startAnimalUpdates(); // Start the simulation
 })
