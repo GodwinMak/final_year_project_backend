@@ -9,7 +9,9 @@ var animals = [];
 
 async function fetchAnimals() {
   try {
-    const response = await fetch("http://localhost:8080/api/animals");
+    const response = await fetch(
+      "https://apiv2.at.patrickmamsery.co.tz/api/animals"
+    );
     const data = await response.json();
     animals = data.animals;
     return animals;
@@ -81,7 +83,7 @@ async function postToDatabase(animal_TagId, position) {
 
   try {
     const response = await fetch(
-      "http://localhost:8080/api/animals/createPoint",
+      "https://apiv2.at.patrickmamsery.co.tz/api/animals/createPoint",
       {
         method: "POST",
         headers: {
