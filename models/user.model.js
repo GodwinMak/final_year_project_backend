@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     user_id: {
       type: DataTypes.UUID,
       primaryKey: true,
-      defaultValue: DataTypes.UUIDV4
+      defaultValue: DataTypes.UUIDV4,
     },
     first_name: {
       type: DataTypes.STRING,
@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
     },
     role: {
-      type: DataTypes.ENUM("user", "admin"),
+      type: DataTypes.ENUM("user", "admin", "root"),
       allowNull: false,
     },
     area_id: {
@@ -44,7 +44,6 @@ module.exports = (sequelize, DataTypes) => {
       },
       onDelete: "CASCADE", // Adjust the deletion behavior as needed
     },
-  }
-  );
+  });
   return User;
 };

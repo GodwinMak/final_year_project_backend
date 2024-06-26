@@ -6,7 +6,7 @@ const { Server } = require("socket.io");
 const simulation = require("./simulation"); // Require the simulation module
 
 const db = require("./models");
-const Animal_point = db.animals;
+const Animal_point = db.animalLocations;
 
 const app = express();
 require("dotenv").config({ path: "./.env" });
@@ -34,8 +34,23 @@ app.get('/', (req,res)=>{
   res.send('<h1>hello world</h1>');
 })
 
-// const Simulation = require("./simulation")
-// app.use(Simulation)
+
+
+
+// routers
+const userRouter = require('./routers/userRouter');
+const reportRouter = require('./routers/reportRouter');
+const areaRouter = require('./routers/areaRouter');
+const animalRoute = require('./routers/animalRouter')
+
+app.use('/api/users', userRouter);
+app.use('/api/reports', reportRouter);
+app.use('/api/areas', areaRouter);
+app.use("/api/animals", animalRoute);
+
+
+const PORT = process.env.PORT || 8080;
+
 
 const server = http.createServer(app);
 
@@ -69,23 +84,6 @@ const onData = ({ event, instance }) => {
 };
 
 stream.on("data", onData);
-
-// routers
-const userRouter = require('./routers/userRouter');
-const reportRouter = require('./routers/reportRouter');
-const areaRouter = require('./routers/areaRouter');
-const animalRoute = require('./routers/animalRouter')
-
-app.use('/api/users', userRouter);
-app.use('/api/reports', reportRouter);
-app.use('/api/areas', areaRouter);
-app.use("/api/animals", animalRoute);
-
-
-const PORT = process.env.PORT || 8080;
-
-
-
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);

@@ -23,7 +23,7 @@ exports.createUser = async (req, res) => {
     }
 
     // Check if the provided area_id exists in the areas table
-    if(role === "user"){
+    if(role === "user" || role === "admin"){
       const area = await Area.findByPk(area_id);
       if (!area) {
         return res
@@ -45,7 +45,7 @@ exports.createUser = async (req, res) => {
       return  res.status(200).send(user);
     }
     
-    if(role === "admin"){
+    if(role === "root"){
       const salt = await bcrypt.genSalt(Number(10));
       const hashedPassword = await bcrypt.hash(password, salt);
 
