@@ -1,7 +1,8 @@
 const db = require("../models");
 const { Op } = require("sequelize");
 const { Sequelize } = require("sequelize");
-
+const dayjs = require("dayjs");
+const turf = require("@turf/turf");
 // creat main model
 const Animal = db.animals;
 const Animal_Location = db.animalLocations
@@ -68,92 +69,6 @@ exports.getRealTimeAnimalData = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-
-
-exports.getData = async (req, res) => {
-  try {
-    // Get the list of animal_TagId values from the request query
-    const animalTagIds = req.query.animalTagIds ? req.query.animalTagIds.split(',') : [];
-
-    // Check if the user provided the numberOfDays parameter
-    const numberOfDays = parseInt(req.query.numberOfDays);
-    let whereCondition = {};
-
-    if (!isNaN(numberOfDays)) {
-      const mostRecentDataPromises = animalTagIds.map(async (animalTagId) => {
-        return await Animal_Location.findOne({
-          where: { animal_TagId: animalTagId },
-          order: [['time', 'DESC']],
-        });
-      });
-
-      // Wait for all promises to resolve
-      const mostRecentDataResults = await Promise.all(mostRecentDataPromises);
-
-      // Calculate the start date based on the most recent data for each animal
-      const startDateByAnimal = mostRecentDataResults.map((mostRecentData) => {
-        return new Date(new Date(mostRecentData.time) - numberOfDays * 24 * 60 * 60 * 1000);
-      });
-
-      // For each animal, fetch location data for the specified number of days from the most recent data
-      const animalDataPromises = animalTagIds.map(async (animalTagId, index) => {
-        return await Animal_Location.findAll({
-          include: [{
-            model: Animal,
-            required: true,
-          }],
-          where: {
-            animal_TagId: animalTagId,
-            time: {
-              [Op.gte]: startDateByAnimal[index]
-            }
-          },
-          order: [['time', 'DESC']],
-        });
-      });
-
-      // Execute all promises concurrently
-      const animalData = await Promise.all(animalDataPromises);
-      return res.json(animalData);
-    }else{
-      // If numberOfDays is not provided or invalid, return recent data for each animal
-      const animalDataPromises = animalTagIds.map(async (animalTagId) => {
-        // Find the most recent data for each animal
-        const mostRecentData = await Animal_Location.findOne({
-          where: { animal_TagId: animalTagId },
-          order: [['time', 'DESC']],
-        });
-
-        // If mostRecentData exists, filter data for the past 24 hours
-        if (mostRecentData) {
-          whereCondition.time = {
-            [Op.gte]: new Date(mostRecentData.time - 24 * 60 * 60 * 1000)
-          };
-        }
-
-        // Fetch animal location data for each animal
-        return await Animal_Location.findAll({
-          include: [{
-            model: Animal,
-            required: true,
-          }],
-          where: whereCondition,
-          order: [['time', 'DESC']],
-        });
-      });
-
-      // Execute all promises concurrently
-      const animalData = await Promise.all(animalDataPromises);
-      res.json(animalData);
-    }
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-
 
 exports.createAnimal = async (req, res) => {
   try {
@@ -294,3 +209,211 @@ exports.getAnimalAvailable = async (req, res) => {
   }
 }
 
+
+exports.getAnimalLineMap = async (req, res) => {
+  try {
+    const animalTagIds = req.query.animalTagIds
+      ? req.query.animalTagIds.split(",")
+      : [];
+    const numberOfDays = req.query.numberOfDays
+      ? parseInt(req.query.numberOfDays)
+      : 0;
+    const endDate = new Date();
+    const startDate = dayjs(endDate).subtract(numberOfDays, "day").toDate();
+    const animals = await Animal_Location.findAll({
+      where: {
+        time: {
+          [Op.between]: [startDate, endDate],
+        },
+        animal_TagId: {
+          [Op.in]: animalTagIds, // Filter based on the animalTagIds array
+        },
+      },
+      include: [
+        {
+          model: Animal,
+          required: true,
+          attributes: ["animal_name"],
+        },
+      ],
+      order: [["time", "ASC"]],
+    });
+    // Group the fetched data by animal_TagId
+    const groupedData = animals.reduce((acc, animalLocation) => {
+      const { animal_TagId, animal } = animalLocation;
+      if (!acc[animal_TagId]) {
+        acc[animal_TagId] = {
+          animal_name: animal.animal_name,
+          animal_TagId: animal_TagId,
+          coordinates: [],
+        };
+      }
+      acc[animal_TagId].coordinates.push(animalLocation.animal_location.coordinates);
+      return acc;
+    }, {});
+
+    // Convert groupedData into the required format
+    const formattedData = Object.keys(groupedData).map((animal_TagId) => ({
+      animal_name: groupedData[animal_TagId].animal_name,
+      animal_TagId: animal_TagId,
+      geojson: {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            geometry: {
+              type: "LineString",
+              coordinates: groupedData[animal_TagId].coordinates,
+            },
+          },
+        ],
+      },
+    }));
+
+    res.status(200).json(formattedData);
+  } catch (error) {
+    res.status(500).json({error: error.message})
+  }
+};
+
+
+exports.getAnimalPoints = async (req, res) => {
+  try {
+    const animalTagIds = req.query.animalTagIds
+      ? req.query.animalTagIds.split(",")
+      : [];
+    const numberOfDays = req.query.numberOfDays
+      ? parseInt(req.query.numberOfDays)
+      : 0;
+    const endDate = new Date();
+    const startDate = dayjs(endDate).subtract(numberOfDays, "day").toDate();
+
+    const animals = await Animal_Location.findAll({
+      where: {
+        time: {
+          [Op.between]: [startDate, endDate],
+        },
+        animal_TagId: {
+          [Op.in]: animalTagIds,
+        },
+      },
+      include: [
+        {
+          model: Animal,
+          required: true,
+          attributes: ["animal_name"],
+        },
+      ],
+      order: [["time", "ASC"]],
+    });
+
+    // Group the fetched data by animal_TagId
+    const groupedData = animals.reduce((acc, animalLocation) => {
+      const { animal_TagId, animal } = animalLocation;
+      if (!acc[animal_TagId]) {
+        acc[animal_TagId] = {
+          animal_name: animal.animal_name,
+          animal_TagId: animal_TagId,
+          points: [],
+        };
+      }
+      acc[animal_TagId].points.push({
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: animalLocation.animal_location.coordinates,
+        },
+        properties: {},
+      });
+      return acc;
+    }, {});
+
+    // Convert groupedData into the required format
+    const formattedData = Object.keys(groupedData).map((animal_TagId) => ({
+      animal_name: groupedData[animal_TagId].animal_name,
+      animal_TagId: animal_TagId,
+      geojson: {
+        type: "FeatureCollection",
+        features: groupedData[animal_TagId].points,
+      },
+    }));
+
+    res.status(200).json(formattedData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+exports.getAnimalStas  = async (req, res) => {
+  try {
+    const areaId = req.query.areaId; // Get the areaId from query params
+    
+
+    const animals = await Animal_Location.findAll({
+      
+      include: [
+        {
+          model: Animal,
+          required: true,
+          attributes: ["animal_name"],
+        },
+      ],
+      order: [
+        ["animal_TagId", "ASC"],
+        ["time", "ASC"],
+      ],
+    });
+
+    const groupedData = animals.reduce((acc, location) => {
+      const { animal_TagId, time, animal_location, animal } = location;
+      if (!acc[animal_TagId]) {
+        acc[animal_TagId] = {
+          animal_name: animal.animal_name,
+          animal_TagId: animal_TagId,
+          locations: [],
+        };
+      }
+      acc[animal_TagId].locations.push({
+        time,
+        coordinates: animal_location.coordinates,
+      });
+      return acc;
+    }, {});
+
+    const results = Object.keys(groupedData).map((animal_TagId) => {
+      const { animal_name, locations } = groupedData[animal_TagId];
+      let totalDistance = 0;
+      const distances = [];
+
+      for (let i = 1; i < locations.length; i++) {
+        const from = turf.point(locations[i - 1].coordinates);
+        const to = turf.point(locations[i].coordinates);
+        const distance = turf.distance(from, to, { units: "kilometers" });
+        const timeDiff =
+          (new Date(locations[i].time) - new Date(locations[i - 1].time)) /
+          3600000; // in hours
+
+        const speed = distance / timeDiff;
+        totalDistance += distance;
+
+        distances.push({
+          min_distance_km: distance,
+          min_speed_kmh: speed,
+          total_distance_km: totalDistance,
+          time: locations[i].time,
+        });
+      }
+
+      return {
+        animal_name,
+        animal_TagId,
+        movements: distances,
+      };
+    });
+
+    res.status(200).json(results);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}

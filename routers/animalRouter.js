@@ -10,7 +10,9 @@ const {
   getAnimalAvailable,
   bulkInsertAnimals,
   getRealTimeAnimalData,
-  getData
+  getAnimalLineMap,
+  getAnimalPoints,
+  getAnimalStas,
 } = require("../controllers/animalController");
 
 
@@ -20,7 +22,9 @@ router.post("/bulkInsertAnimals", bulkInsertAnimals)
 router.post('/createAnimal', createAnimal);
 router.get('/', getAnimalAvailable);
 router.get('/realtime', getRealTimeAnimalData)
-router.get('/getData', getData);
+router.get("/getDataLineMap", getAnimalLineMap);
+router.get("/getDataPoint", getAnimalPoints);
+router.get("/getAnimalStats", getAnimalStas);
 router.get('/getColour', getAnimalColor);
 router.delete('/deleteAnimal/:id', deleteAnimalById)
 

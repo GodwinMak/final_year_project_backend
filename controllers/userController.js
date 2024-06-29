@@ -69,6 +69,7 @@ exports.loginUser = async (req, res, next) => {
   try {
    
     const { username, password } = req.body;
+    console.log(username)
 
     const user = await User.findOne({
       where: { username: username },
@@ -84,18 +85,10 @@ exports.loginUser = async (req, res, next) => {
       return res.status(401).json({ message: "Invalid User Name or password" });
     };
 
-    if(user.role === "user"){
-      return res.status(200).json({
-        status: true,
-        user
-      });
-    }
-    if(user.role === "admin") {
-      return res.status(200).json({
+    res.status(200).json({
       status: true,
       user
-    });
-    }
+    })
   } catch (error) {
     res.status(403).json({ status: false, error: error });
   }
