@@ -41,12 +41,16 @@ app.get('/', (req,res)=>{
 const userRouter = require('./routers/userRouter');
 const reportRouter = require('./routers/reportRouter');
 const areaRouter = require('./routers/areaRouter');
-const animalRoute = require('./routers/animalRouter')
+const animalRoute = require('./routers/animalRouter');
+// const 
+const statsRoute = require('./routers/statsRouter')
 
 app.use('/api/users', userRouter);
 app.use('/api/reports', reportRouter);
 app.use('/api/areas', areaRouter);
 app.use("/api/animals", animalRoute);
+app.use("/api/stats", animalRoute);
+
 
 
 const PORT = process.env.PORT || 8080;
