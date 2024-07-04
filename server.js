@@ -49,7 +49,7 @@ app.use('/api/users', userRouter);
 app.use('/api/reports', reportRouter);
 app.use('/api/areas', areaRouter);
 app.use("/api/animals", animalRoute);
-app.use("/api/stats", animalRoute);
+app.use("/api/stats", statsRoute);
 
 
 
