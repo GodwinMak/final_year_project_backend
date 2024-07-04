@@ -347,7 +347,7 @@ exports.getAnimalPoints = async (req, res) => {
 
 exports.getAnimalStas  = async (req, res) => {
   try {
-    const areaId = req.query.areaId; // Get the areaId from query params
+    // const areaId = req.query.areaId; // Get the areaId from query params
     
 
     const animals = await Animal_Location.findAll({
@@ -360,8 +360,8 @@ exports.getAnimalStas  = async (req, res) => {
         },
       ],
       order: [
-        ["animal_TagId", "ASC"],
-        ["time", "ASC"],
+        // ["animal_TagId", "ASC"],
+        // ["time", "ASC"],
       ],
     });
 

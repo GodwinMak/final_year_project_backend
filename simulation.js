@@ -1,7 +1,7 @@
 var q = require("q");
 var turf = require("turf");
 var mapboxgl = require("mapbox-gl");
-var fetch = require("node-fetch")
+var fetch = require("node-fetch");
 mapboxgl.accessToken =
   "pk.eyJ1IjoiZ29kd2luLW1ha3lhbyIsImEiOiJjbGcxdnBobTAxcHA0M25xeWRycWhldDRhIn0.K6dLSpAqVOmeX8X4205dVQ";
 
@@ -123,7 +123,7 @@ async function startAnimalUpdates() {
     animals.forEach((animal) => {
       updateAnimalPosition(animal);
     });
-  }, 300000); // 300000 milliseconds = 5 minutes
+  }, 30000); // 300000 milliseconds = 5 minutes
 }
 
 module.exports = { startAnimalUpdates };
